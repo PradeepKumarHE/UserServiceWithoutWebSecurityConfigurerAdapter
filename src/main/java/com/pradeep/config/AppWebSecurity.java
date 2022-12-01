@@ -1,12 +1,15 @@
 package com.pradeep.config;
 
+import static com.pradeep.constants.SecurityConstant.PUBLIC_URLS;
+
+import com.pradeep.jwt.JwtAccessDeniedHandler;
 import com.pradeep.jwt.JwtAuthenticationEntryPoint;
 import com.pradeep.jwt.JwtAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,8 +26,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class AppWebSecurity {
 
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-    private JwtAuthorizationFilter jwtAuthorizationFilter ;
+    private JwtAuthorizationFilter jwtAuthorizationFilter;
 
     private @Qualifier("userDetailsService") UserDetailsService userDetailsService;
 
@@ -35,37 +39,30 @@ public class AppWebSecurity {
                 .and()
                 .csrf()
                 .disable()
-
-                .authorizeRequests()
-                .antMatchers("/register").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .httpBasic()
-
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers(PUBLIC_URLS).permitAll()
+                        .anyRequest().authenticated()
+                )
                 .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .exceptionHandling().accessDeniedHandler(jwtAccessDeniedHandler)
                 .and()
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+        return authenticationManagerBuilder.build();
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider daoAuthenticationProvider=new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        return daoAuthenticationProvider;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

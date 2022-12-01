@@ -2,7 +2,6 @@ package com.pradeep.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pradeep.response.CustomHttpResponse;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -17,7 +16,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
-    public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+    public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AccessDeniedException accessDeniedException) throws IOException {
 
         httpServletResponse.setContentType(APPLICATION_JSON_VALUE);
 

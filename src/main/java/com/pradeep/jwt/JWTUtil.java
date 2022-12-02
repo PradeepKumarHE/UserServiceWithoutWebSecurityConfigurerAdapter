@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -13,7 +14,9 @@ import java.util.function.Function;
 
 import static com.pradeep.constants.JWTConstants.*;
 
+@Component
 public class JWTUtil {
+
     public String generateJwtToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<String, Object>();
         return Jwts.builder()
@@ -37,7 +40,7 @@ public class JWTUtil {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
-    public boolean validateToken(String token, UserDetails userDetails) {
+    public boolean isValidToken(String token, UserDetails userDetails) {
         String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }

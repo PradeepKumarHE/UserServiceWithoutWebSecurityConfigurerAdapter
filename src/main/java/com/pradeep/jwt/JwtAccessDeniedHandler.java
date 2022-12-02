@@ -19,13 +19,11 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AccessDeniedException accessDeniedException) throws IOException {
 
         httpServletResponse.setContentType(APPLICATION_JSON_VALUE);
-
         CustomHttpResponse customHttpResponse=new CustomHttpResponse();
         customHttpResponse.setPath(httpServletRequest.getRequestURI());
         customHttpResponse.setHttpStatusCode(HttpStatus.UNAUTHORIZED.value());
         customHttpResponse.setTitle(accessDeniedException.getMessage());
         customHttpResponse.setMessage(accessDeniedException.getCause().getMessage());
-
         ObjectMapper objectMapper = new ObjectMapper();
         OutputStream outputStream = httpServletResponse.getOutputStream();
         objectMapper.writeValue(outputStream, customHttpResponse);
